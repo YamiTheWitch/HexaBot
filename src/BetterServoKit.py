@@ -1,22 +1,27 @@
+'''Reimplemented ServoKit class from the CircuitPython library.'''
+
 import time
-from typing import List
 from board import SCL, SDA
 import busio
 import adafruit_motor.servo
 from adafruit_pca9685 import PCA9685
 from pwmio import PWMOut
-import RPi.GPIO as GPIO
 
-
-class ServoKit2():
+class ServoKit():
+    '''Can drive 2 PCA9865 PWM-drivers at I2C addresses 0x40 and 0x41. 
+    
+    The 32 servo motors can be accessed through the servo[] field. The first PWM-driver is mapped to servo motors 0-15 and the second PWM-driver to servo motors 16-31.'''
     def __init__(self):
+        '''Can drive 2 PCA9865 PWM-drivers at I2C addresses 0x40 and 0x41. 
+    
+            The 32 servo motors can be accessed through the servo[] field. The first PWM-driver is mapped to servo motors 0-15 and the second PWM-driver to servo motors 16-31.'''
         i2c = busio.I2C(SCL, SDA)
         pca = PCA9685(i2c,address=64)
         pca.frequency = 50
         pca2 = PCA9685(i2c,address=65)
         pca2.frequency = 50
         i = 0
-        self.servo =[adafruit_motor.servo.Servo]*32
+        self.servo =[]
         for channel in pca.channels:
             self.servo[i]=adafruit_motor.servo.Servo(channel, min_pulse=1100, max_pulse=2100)
             i+=1
@@ -26,12 +31,12 @@ class ServoKit2():
 
     
 def main():
-    GPIO.cleanup()
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(7, GPIO.OUT)
-    GPIO.output(7, True)
+    #GPIO.cleanup()
+    #GPIO.setmode(GPIO.BCM)
+    #GPIO.setup(7, GPIO.OUT)
+    #GPIO.output(7, True)
     
-    kit = ServoKit2()
+    kit = ServoKit()
     for servo in kit.servo:
         servo.angle=None
         
