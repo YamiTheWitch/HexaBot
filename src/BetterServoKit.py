@@ -21,7 +21,7 @@ class ServoKit():
         pca2 = PCA9685(i2c,address=65)
         pca2.frequency = 50
         i = 0
-        self.servo =[]
+        self.servo =[adafruit_motor.servo.Servo]*32
         for channel in pca.channels:
             self.servo[i]=adafruit_motor.servo.Servo(channel, min_pulse=1100, max_pulse=2100)
             i+=1
