@@ -8,7 +8,7 @@ from adafruit_pca9685 import PCA9685
 from pwmio import PWMOut
 from typing import Optional
 
-class _Servo(adafruit_motor.servo.Servo):  # override to allow for float angle values
+class Servo(adafruit_motor.servo.Servo):  # override to allow for float angle values
     def __init__(
         self,
         pwm_out: "PWMOut",
@@ -56,12 +56,12 @@ class ServoKit():
         pca2 = PCA9685(i2c,address=65)
         pca2.frequency = 50
         i = 0
-        self.servo =[_Servo]*32
+        self.servo =[Servo]*32
         for channel in pca.channels:
-            self.servo[i]=_Servo(channel, min_pulse=1100, max_pulse=2100)
+            self.servo[i]=Servo(channel, min_pulse=1100, max_pulse=2100)
             i+=1
         for channel in pca2.channels:
-            self.servo[i]=_Servo(channel, min_pulse=1100, max_pulse=2100)
+            self.servo[i]=Servo(channel, min_pulse=1100, max_pulse=2100)
             i+=1
 
     
@@ -75,6 +75,7 @@ def main():
     for servo in kit.servo:
         servo.angle=None
         
+        
     #ps4 = PS4Controller()
     #ps4.init()
 
@@ -85,9 +86,6 @@ def main():
         #print(int((ps4.RX_Axis+1)*90))
         #for servo in kit.servo:
         #    servo.angle = int((ps4.RX_Axis+1)*90)
-            
-        for servo in kit.servo:
-            servo.angle = 90
         #for servo in kit.servo:
             #servo.angle=None
         time.sleep(0.1)

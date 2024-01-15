@@ -3,8 +3,7 @@
 from __future__ import annotations
 import time
 import math
-from adafruit_motor import servo
-from BetterServoKit import ServoKit
+from BetterServoKit import ServoKit, Servo
 from Controller import PS4Controller
 from threading import Thread
 from abc import ABC, abstractmethod
@@ -101,7 +100,7 @@ class HBPS4IO(HBUserIO):
         
 class Joint():
     '''A class representing a single rotational joint using a servo motor.'''
-    def __init__(self, servo : servo.Servo, inverted : bool = False, offset : int = 0):
+    def __init__(self, servo : Servo, inverted : bool = False, offset : int = 0):
         '''A class representing a single rotational joint using a servo motor.
         
         servo: The servo object used in the Joint.
@@ -194,6 +193,7 @@ class HBMovementState():
     RUNNINGJUMPSTART=12     #
     RUNNINGJUMP=13          # unimplemented: implement if normal jump works
     RUNNINGJUMPLAND=14      #
+    
             
             
 class HBMovement:
@@ -244,8 +244,8 @@ class HBMovement:
                 if self.__userIO.increaseHeightCon():
                     self.__height+=3
                     
-                    if self.__height > 36:
-                        self.__height = 36
+                    if self.__height > 63:
+                        self.__height = 63
                         
                 elif self.__userIO.decreaseHeightCon():
                     self.__height-=3
@@ -338,7 +338,7 @@ class HBMovement:
         '''Helper function. Does the required movement for a static jump.'''
         self.__moveAll(0,0,-30)
         time.sleep(0.4)
-        self.__moveAll(0,0,30)
+        self.__moveAll(0,0,0)
         
     def __movement(self, speed:float, turn:float=0):
         '''Helper function. Does the required movement for running and turning while running.'''
