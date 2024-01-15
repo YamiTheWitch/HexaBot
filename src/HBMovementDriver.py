@@ -14,7 +14,7 @@ J3L = 112 #length between middle joint and tip
 J3OffsetAngle=-5 #the offset angle between where the tip actually is and where it's supposed to be
 
 Y_rest = 70 #resting Y position
-Z_rest = -110 #resting X position
+Z_rest = -80 #resting X position
 
 
 class HBUserIO(ABC):
@@ -113,7 +113,7 @@ class Joint():
         self.inv = inverted
         self.offs=offset
         
-    def angle(self, angle: int):
+    def angle(self, angle: float):
         '''Sets the angle of the joint.'''
         if(self.inv):
             self.servo.angle=(180-angle+self.offs)
@@ -148,6 +148,8 @@ class Leg():
         relZ: The relative target Z position to the leg.'''
         relY+= Y_rest
         relZ+= Z_rest
+        
+        
         if(self.angle!=0):
             angRad = math.radians(self.angle) 
             tempX = ((relX*math.cos(angRad))-(relY*math.sin(angRad)))
@@ -161,15 +163,15 @@ class Leg():
         J3= math.degrees(math.acos(((J2L * J2L) + (J3L * J3L) - (L * L))   /   (2 * J2L * J3L)))
         B= math.degrees(math.acos(((L * L) + (J2L * J2L) - (J3L * J3L))   /   (2 * L * J2L)))
         A= math.degrees(math.atan(relZ/H))
-        J2= (B+A)
+        J2= -(B+A)
         
         
-        self.j1.angle(90-int(J1))
-        self.j2.angle(90-int(J2))
+        self.j1.angle(90-J1)
+        self.j2.angle(90-J2)
         if self.j3.inv:
-            self.j3.angle(int(J3-J3OffsetAngle))
+            self.j3.angle(J3-J3OffsetAngle)
         else:
-            self.j3.angle(int(J3+J3OffsetAngle))
+            self.j3.angle(J3+J3OffsetAngle)
             
 class HBMovementState():
     '''The FSM states.'''
@@ -240,14 +242,21 @@ class HBMovement:
             if self.__state == HBMovementState.IDLE:
                 self.__idle()
                 if self.__userIO.increaseHeightCon():
-                    self.__height+=1
+                    self.__height+=3
+                    
+                    if self.__height > 36:
+                        self.__height = 36
+                        
                 elif self.__userIO.decreaseHeightCon():
-                    self.__height-=1
+                    self.__height-=3
+                    
+                    if self.__height < -63:
+                        self.__height = -63
                     
                 if self.__userIO.increaseSpeedCon():
-                    self.__globalspeed+=0.3
+                    self.__globalspeed+=0.1
                 elif self.__userIO.decreaseSpeedCon():
-                    self.__globalspeed-=0.3
+                    self.__globalspeed-=0.1
                     
                 if self.__userIO.resetCon():
                     self.__height=0
@@ -327,24 +336,24 @@ class HBMovement:
     
     def __jump(self):
         '''Helper function. Does the required movement for a static jump.'''
-        self.__moveAll(0,0,40)
+        self.__moveAll(0,0,-30)
         time.sleep(0.4)
-        self.__moveAll(0,0,-20)
+        self.__moveAll(0,0,30)
         
     def __movement(self, speed:float, turn:float=0):
         '''Helper function. Does the required movement for running and turning while running.'''
         speed*=self.__globalspeed
         x1 = math.sin(self.__runCycle)*(10+(turn*5))
-        y1 = math.cos(self.__runCycle)*40
+        y1 = math.cos(self.__runCycle)*30
         if(y1<0):
             y1=0
-        x2 = math.sin(self.__runCycle+(math.pi))*(10+(turn*5))
-        y2 = math.cos(self.__runCycle+(math.pi))*40
+        x2 = math.sin(self.__runCycle+(math.pi))*(10-(turn*5))
+        y2 = math.cos(self.__runCycle+(math.pi))*30
         if(y2<0):
             y2=0
             
-        y1+=self.__height
-        y2+=self.__height
+        y1 = self.__height-y1
+        y2 = self.__height-y2
         
         self.__leg1.moveLeg(x1,0,y1)
         self.__leg2.moveLeg(x2,0,y2)
@@ -358,16 +367,16 @@ class HBMovement:
         '''Helper function. Does the required movement for a static turn.'''
         turn*=self.__globalspeed
         x1 = math.sin(self.__turnCylce)*10
-        y1 = math.cos(self.__turnCylce)*40
+        y1 = math.cos(self.__turnCylce)*30
         if(y1<0):
             y1=0
         x2 = math.sin(self.__turnCylce+(math.pi))*10
-        y2 = math.cos(self.__turnCylce+(math.pi))*40
+        y2 = math.cos(self.__turnCylce+(math.pi))*30
         if(y2<0):
             y2=0
         
-        y1+=self.__height
-        y2+=self.__height
+        y1=self.__height-y1
+        y2=self.__height-y2
         
         self.__leg1.moveLeg(x1,0,y1)
         self.__leg2.moveLeg(x2,0,y2)
